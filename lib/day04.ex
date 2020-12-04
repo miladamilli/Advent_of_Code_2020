@@ -33,40 +33,27 @@ defmodule Day04 do
   end
 
   defp check(:byr, byr) do
-    byr = String.to_integer(byr)
-    byr >= 1920 && byr <= 2002
+    String.to_integer(byr) in 1920..2002
   end
 
   defp check(:iyr, iyr) do
-    byr = String.to_integer(iyr)
-    byr >= 2010 && byr <= 2020
+    String.to_integer(iyr) in 2010..2020
   end
 
   defp check(:eyr, eyr) do
-    byr = String.to_integer(eyr)
-    byr >= 2020 && byr <= 2030
+    String.to_integer(eyr) in 2020..2030
   end
 
   defp check(:hgt, hgt) do
     case Integer.parse(hgt) do
-      {number, "cm"} -> number >= 150 && number <= 193
-      {number, "in"} -> number >= 59 && number <= 76
+      {number, "cm"} -> number in 150..193
+      {number, "in"} -> number in 59..76
       _ -> false
     end
   end
 
-  @color ~w(a b c d e f 0 1 2 3 4 5 6 7 8 9)
-  defp check(:hcl, "#" <> color) do
-    if byte_size(color) != 6 do
-      false
-    else
-      color = String.codepoints(color)
-      Enum.all?(color, fn char -> char in @color end)
-    end
-  end
-
-  defp check(:hcl, _hcl) do
-    false
+  defp check(:hcl, color) do
+    Regex.match?(~r/^#[a-f0-9]{6}$/, color)
   end
 
   @ecl ~w(amb blu brn gry grn hzl oth)
@@ -74,15 +61,8 @@ defmodule Day04 do
     ecl in @ecl
   end
 
-  @digits ~w(0 1 2 3 4 5 6 7 8 9)
-
   defp check(:pid, pid) do
-    if byte_size(pid) != 9 do
-      false
-    else
-      pid = String.codepoints(pid)
-      Enum.all?(pid, fn char -> char in @digits end)
-    end
+    Regex.match?(~r/^\d{9}$/, pid)
   end
 
   defp check(:cid, _cid) do
