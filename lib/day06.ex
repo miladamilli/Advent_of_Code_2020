@@ -34,8 +34,8 @@ defmodule Day06 do
     answers = group |> Enum.map(&String.codepoints/1)
     all_answers = answers |> List.flatten() |> Enum.uniq()
 
-    Enum.filter(all_answers, fn answer ->
-      Enum.all?(answers, fn passenger -> answer in passenger end)
+    Enum.reduce(answers, MapSet.new(all_answers), fn passenger, intersection ->
+      MapSet.intersection(MapSet.new(passenger), intersection)
     end)
     |> Enum.count()
   end
