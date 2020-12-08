@@ -1,11 +1,11 @@
 defmodule Day07 do
   def part1 do
-    bags =
-      "input/day07.txt"
-      |> File.read!()
-      |> parse_file
-
-    find_bags(bags, ["shiny gold"], []) |> Enum.uniq() |> Enum.count()
+    "input/day07.txt"
+    |> File.read!()
+    |> parse_file
+    |> find_bags(["shiny gold"], [])
+    |> Enum.uniq()
+    |> Enum.count()
   end
 
   defp find_bags(_bags, [], acc) do
@@ -17,7 +17,7 @@ defmodule Day07 do
       Enum.filter(bags, fn {_outer_bag, inner_bags} ->
         Enum.any?(inner_bags, &String.contains?(&1, bag_wanted))
       end)
-      |> Enum.map(fn {outer_bag, _inner_bags} -> String.trim_trailing(outer_bag, " bags") end)
+      |> Enum.map(fn {outer_bag, _inner_bags} -> trim(outer_bag) end)
 
     find_bags(bags, rest ++ bags_found, acc ++ bags_found)
   end
@@ -25,68 +25,58 @@ defmodule Day07 do
   defp parse_file(file) do
     file
     |> String.split("\n", trim: true)
+    |> Enum.map(&String.trim_trailing(&1, "."))
     |> Enum.map(&String.split(&1, " contain "))
-    |> Enum.map(fn [outer_bag, inner_bags] ->
-      inner_bags = String.trim_trailing(inner_bags, ".") |> String.split(", ")
-      {outer_bag, inner_bags}
-    end)
+    |> Enum.map(fn [outer_bag, inner_bags] -> {outer_bag, String.split(inner_bags, ", ")} end)
   end
 
   def part2 do
-    bags =
-      "input/day07.txt"
-      |> File.read!()
-      |> parse_file2
-
-    count_bags_inside("shiny gold", bags)
+    "input/day07.txt"
+    |> File.read!()
+    |> parse_file
+    |> parse_data
+    |> count_bags_inside("shiny gold")
   end
 
-  defp count_bags_inside(my_bag, bags) do
+  defp count_bags_inside(bags, my_bag) do
     new_bags = bags[my_bag]
 
-    if new_bags == nil do
-      0
-    else
+    if new_bags != nil do
       bags_in_this_one = Enum.map(new_bags, fn {_bag, count} -> count end) |> Enum.sum()
 
       other_bags =
-        Enum.map(new_bags, fn {bag, count} -> count * count_bags_inside(bag, bags) end)
+        new_bags
+        |> Enum.map(fn {bag, count} -> count * count_bags_inside(bags, bag) end)
         |> Enum.sum()
 
       bags_in_this_one + other_bags
+    else
+      0
     end
   end
 
-  defp parse_file2(file) do
-    file
-    |> String.split("\n", trim: true)
-    |> Enum.map(&String.split(&1, " contain "))
-    |> Enum.map(fn [outer_bag, inner_bags] ->
+  defp parse_data(inner_bags) do
+    inner_bags
+    |> Enum.map(fn {outer_bag, inner_bags} ->
       inner_bags =
         inner_bags
-        |> String.trim_trailing(".")
-        |> String.split(", ")
         |> Enum.reject(&String.contains?(&1, "no other bags"))
         |> Enum.map(fn bag ->
           {number, bag} = String.split_at(bag, 1)
-
-          bag =
-            bag
-            |> String.trim_trailing(" bags")
-            |> String.trim_trailing(" bag")
-            |> String.trim_leading()
-
+          bag = trim(bag)
           {bag, String.to_integer(number)}
         end)
         |> Map.new()
 
-      outer_bag =
-        outer_bag
-        |> String.trim_trailing(" bags")
-        |> String.trim_trailing(" bag")
-
-      {outer_bag, inner_bags}
+      {trim(outer_bag), inner_bags}
     end)
     |> Map.new()
+  end
+
+  defp trim(line) do
+    line
+    |> String.trim_trailing("bags")
+    |> String.trim_trailing("bag")
+    |> String.trim()
   end
 end
