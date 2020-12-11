@@ -36,6 +36,10 @@ defmodule Day10 do
     1
   end
 
+  defp count_arrangements([_a1], _outlet) do
+    1
+  end
+
   def run(adapters) do
     charging_outlet = 0
     device = Enum.max(adapters) + 3

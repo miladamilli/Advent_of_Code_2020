@@ -68,4 +68,9 @@ defmodule Day10Test do
   test "part 2" do
     assert Day10.part2() == 347_250_213_298_688
   end
+
+  test "b" do
+    b = "input/day10_b.txt" |> File.read!() |> Day10.parse_input() |> Day10.run2()
+    assert b == 6_908_379_398_144
+  end
 end
