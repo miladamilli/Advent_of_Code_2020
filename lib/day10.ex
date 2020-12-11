@@ -19,31 +19,21 @@ defmodule Day10 do
     count_arrangements(adapters, 0)
   end
 
-  defp count_arrangements([_a1, _a2], _outlet) do
-    1
-  end
-
   defp count_arrangements([a1, a2, a3 | adapters], outlet) do
     if is_nil(Process.get(outlet)) do
-      sum =
-        Enum.map([{a1, 1}, {a2, 2}, {a3, 3}], fn {p, position} ->
-          if (p - outlet) in 1..3 do
-            case {p, position} do
-              {a, 1} -> count_arrangements([a2, a3 | adapters], a)
-              {a, 2} -> count_arrangements([a3 | adapters], a)
-              {a, 3} -> count_arrangements(adapters, a)
-            end
-          else
-            0
-          end
-        end)
-        |> Enum.sum()
-
+      aa1 = if (a1 - outlet) in 1..3, do: count_arrangements([a2, a3 | adapters], a1), else: 0
+      aa2 = if (a2 - outlet) in 1..3, do: count_arrangements([a3 | adapters], a2), else: 0
+      aa3 = if (a3 - outlet) in 1..3, do: count_arrangements(adapters, a3), else: 0
+      sum = aa1 + aa2 + aa3
       Process.put(outlet, sum)
       sum
     else
       Process.get(outlet)
     end
+  end
+
+  defp count_arrangements([_a1, _a2], _outlet) do
+    1
   end
 
   def run(adapters) do
