@@ -35,32 +35,26 @@ defmodule Day13 do
     |> Enum.with_index()
     |> Enum.reject(fn {bus, _index} -> bus == "x" end)
     |> Enum.map(fn {bus, index} -> {String.to_integer(bus), index} end)
-    |> find_times
+    |> find_times()
   end
 
-  defp find_times([{_bus1, time1}]) do
-    time1
+  defp find_times([{_bus, offset}]) do
+    offset
   end
 
-  defp find_times([{bus1, time1}, {bus2, time2} | buses]) do
-    new_time = time1 + bus1
-
-    if rem(new_time + time2, bus2) != 0 do
-      find_times([{bus1, new_time}, {bus2, time2} | buses])
-    else
-      xx = find_times2([{bus1, new_time}, {bus2, time2}])
-
-      find_times([{xx - new_time, new_time} | buses])
-    end
+  defp find_times([bus1, bus2 | buses]) do
+    new_virtual_bus = find_mutual_stop(bus1, bus2)
+    find_times([new_virtual_bus | buses])
   end
 
-  defp find_times2([{bus1, time1}, {bus2, time2}]) do
-    new_time = time1 + bus1
+  defp find_mutual_stop({bus1_interval, offset1}, {bus2_interval, offset2}) do
+    [first_mutual_stop, second_mutual_stop] =
+      offset1
+      |> Stream.unfold(fn o -> {o, o + bus1_interval} end)
+      |> Stream.filter(fn stop -> rem(stop + offset2, bus2_interval) == 0 end)
+      |> Enum.take(2)
 
-    if rem(new_time + time2, bus2) != 0 do
-      find_times2([{bus1, new_time}, {bus2, time2}])
-    else
-      new_time
-    end
+    interval = second_mutual_stop - first_mutual_stop
+    {interval, first_mutual_stop}
   end
 end
