@@ -3,63 +3,58 @@ defmodule Day14 do
     "input/day14.txt"
     |> File.read!()
     |> String.split("\n", trim: true)
-    |> Enum.chunk_by(fn line -> String.contains?(line, "mask") end)
-    |> run(%{})
+    |> run(nil, %{})
     |> Map.values()
     |> Enum.sum()
   end
 
-  def run([], memory) do
+  def run([], _mask, memory) do
     memory
   end
 
-  def run([mask, mems | rest], memory) do
-    mask = read_mask(mask)
-    new_memory = write_values(mask, mems, memory)
-    run(rest, new_memory)
+  def run([line | rest], mask, memory) do
+    case parse_line(line) do
+      {address, value} ->
+        run(rest, mask, update_memory(mask, address, value, memory))
+
+      mask ->
+        run(rest, mask, memory)
+    end
   end
 
-  defp write_values(mask, mems, memory) do
-    to_write = Enum.map(mems, &read_mem/1)
-
-    Enum.reduce(to_write, memory, fn {address, value}, mem ->
-      new_value = apply_mask(mask, value)
-
-      Map.put(mem, address, Integer.undigits(new_value, 2))
+  defp parse_line("mask = " <> mask) do
+    mask
+    |> String.codepoints()
+    |> Enum.map(fn
+      "X" -> :x
+      "0" -> 0
+      "1" -> 1
     end)
   end
 
-  defp apply_mask(mask, value) do
+  defp parse_line("mem" <> line) do
+    [memory_address, value] = String.split(line, " = ")
+    address = memory_address |> String.trim_leading("[") |> String.trim_trailing("]")
+
     value =
       value
+      |> String.to_integer()
       |> Integer.digits(2)
       |> Enum.join()
       |> String.pad_leading(36, "0")
       |> String.codepoints()
       |> Enum.map(&String.to_integer/1)
 
-    mask =
-      String.codepoints(mask)
-      |> Enum.map(fn char ->
-        case char do
-          "X" -> :x
-          "0" -> 0
-          "1" -> 1
-        end
-      end)
+    {address, value}
+  end
 
+  defp update_memory(mask, address, value, memory) do
+    new_value = apply_mask(mask, value) |> Integer.undigits(2)
+    Map.put(memory, address, new_value)
+  end
+
+  defp apply_mask(mask, value) do
     Enum.zip(value, mask)
     |> Enum.map(fn {val, mask} -> if mask == :x, do: val, else: mask end)
-  end
-
-  defp read_mask([mask]) do
-    [_, mask] = String.split(mask, " = ")
-    mask
-  end
-
-  defp read_mem(mem) do
-    [memory_address, value] = String.split(mem, " = ")
-    [[address]] = Regex.scan(~r/\d+/, memory_address)
-    {address, String.to_integer(value)}
   end
 end
