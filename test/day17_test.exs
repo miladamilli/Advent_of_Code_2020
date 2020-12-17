@@ -8,7 +8,7 @@ defmodule Day17Test do
   """
 
   test "test 1" do
-    assert @test |> Day17.parse() |> Day17.run() == 112
+    assert @test |> Day17.parse(:dim3) |> Day17.run_cycles(:dim3) == 112
   end
 
   test "part 1" do
@@ -16,7 +16,7 @@ defmodule Day17Test do
   end
 
   test "test 2" do
-    assert @test |> Day17.parse2() |> Day17.run2() == 848
+    assert @test |> Day17.parse(:dim4) |> Day17.run_cycles(:dim4) == 848
   end
 
   test "part 2" do
